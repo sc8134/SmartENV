@@ -1,0 +1,24 @@
+# TOML config for testing
+app_name = "SmartEnv Test"
+version = "1.0.0"
+debug = true
+port = 8000
+
+[database]
+host = "localhost"
+port = 5432
+name = "myapp"
+ssl = true
+
+[redis]
+url = "redis://localhost:6379"
+pool_size = 10
+
+[features]
+new_ui = true
+beta_access = false
+max_upload_size = 10485760
+
+[logging]
+level = "INFO"
+format = "json"
