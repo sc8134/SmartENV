@@ -1,9 +1,9 @@
 # SmartEnv
 
 [![CI](https://github.com/sc8134/SmartENV/actions/workflows/ci.yml/badge.svg)](https://github.com/sc8134/SmartENV/actions/workflows/ci.yml)
-[![PyPI Version](https://img.shields.io/pypi/v/smartenv.svg)](https://pypi.org/project/smartenv/)
-[![Python Version](https://img.shields.io/pypi/pyversions/smartenv.svg)](https://pypi.org/project/smartenv/)
-[![License](https://img.shields.io/pypi/l/smartenv.svg)](https://github.com/sc8134/SmartENV/blob/main/LICENSE)
+[![PyPI Version](https://img.shields.io/pypi/v/smartenv-settings.svg)](https://pypi.org/project/smartenv-settings/)
+[![Python Version](https://img.shields.io/pypi/pyversions/smartenv-settings.svg)](https://pypi.org/project/smartenv-settings/)
+[![License](https://img.shields.io/pypi/l/smartenv-settings.svg)](https://github.com/sc8134/SmartENV/blob/main/LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](https://github.com/sc8134/SmartENV)
 
@@ -27,7 +27,7 @@ SmartEnv is a pure standard-library Python configuration loader that combines th
 ## Quick Start
 
 ```bash
-pip install smartenv
+pip install smartenv-settings
 ```
 
 ```python
@@ -57,8 +57,10 @@ if config.is_production:
 ## Installation
 
 ```bash
-pip install smartenv
+pip install smartenv-settings
 ```
+
+The distribution is named `smartenv-settings`; the import package is `smartenv`.
 
 Requires Python 3.10+. No dependencies on Python 3.11+ — only the standard library
 (on 3.10, `tomli` is installed automatically because `tomllib` is not available).

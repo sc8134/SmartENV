@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The PyPI distribution is named `smartenv-settings`; the import package remains
+  `smartenv`. PyPI rejects `smartenv` as too similar to the existing
+  `smart-env` project.
 - Source precedence is now defined by format rather than argument order:
   environment variables > `.env` > TOML > JSON. Within one format, later
   arguments still override earlier ones.
