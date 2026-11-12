@@ -25,10 +25,18 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Configuration Management",
 ]
-urls = {Homepage = "https://github.com/smartenv/smartenv", Repository = "https://github.com/smartenv/smartenv", Issues = "https://github.com/smartenv/smartenv/issues"}
+urls = {Homepage = "https://github.com/sc8134/SmartENV", Repository = "https://github.com/sc8134/SmartENV", Issues = "https://github.com/sc8134/SmartENV/issues", Changelog = "https://github.com/sc8134/SmartENV/blob/main/CHANGELOG.md"}
 
 [project.optional-dependencies]
-dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.1", "mypy>=1.5"]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.17",
+    "mypy>=2.4",
+    "pre-commit>=3.7",
+    "build>=1.2",
+    "twine>=5.1",
+]
 docs = ["sphinx>=7.0", "furo>=2023"]
 
 [tool.setuptools.packages.find]
@@ -58,6 +66,20 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 
+[tool.coverage.run]
+branch = true
+source = ["smartenv"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 95
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true
@@ -69,5 +91,5 @@ no_implicit_optional = true
 strict_optional = true
 
 [[tool.mypy.overrides]]
-module = "tests.*"
-disallow_untyped_defs = false
+module = ["tomli"]
+ignore_missing_imports = true

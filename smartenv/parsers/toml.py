@@ -19,7 +19,7 @@ def parse_toml_file(filepath: str) -> dict[str, Any]:
                 raise ParseError(
                     "TOML support requires Python 3.11+ or the 'tomli' package",
                     source=filepath,
-                )
+                ) from None
 
         with open(filepath, "rb") as f:
             data = tomllib.load(f)
@@ -31,7 +31,7 @@ def parse_toml_file(filepath: str) -> dict[str, Any]:
     except ParseError:
         raise
     except Exception as e:
-        raise ParseError(f"Failed to parse TOML file: {e}", source=filepath)
+        raise ParseError(f"Failed to parse TOML file: {e}", source=filepath) from e
 
 
 def parse_toml_string(content: str, *, source: str = "<string>") -> dict[str, Any]:
@@ -46,7 +46,7 @@ def parse_toml_string(content: str, *, source: str = "<string>") -> dict[str, An
                 raise ParseError(
                     "TOML support requires Python 3.11+ or the 'tomli' package",
                     source=source,
-                )
+                ) from None
 
         data = tomllib.loads(content)
         return _flatten_dict(data)
@@ -54,7 +54,7 @@ def parse_toml_string(content: str, *, source: str = "<string>") -> dict[str, An
     except ParseError:
         raise
     except Exception as e:
-        raise ParseError(f"Failed to parse TOML string: {e}", source=source)
+        raise ParseError(f"Failed to parse TOML string: {e}", source=source) from e
 
 
 def _flatten_dict(data: dict[str, Any], prefix: str = "") -> dict[str, Any]:

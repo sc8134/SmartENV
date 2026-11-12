@@ -8,19 +8,19 @@ Example:
     from smartenv import load
 
     config = load(".env", "config.toml", env_prefix="APP_")
-    
+
     # Access styles
     config.get("DATABASE_URL")
     config["db.host"]
     config.db.host
-    
+
     # Casting + defaults
     config.get("PORT", default=8000, cast=int)
     config.get("DEBUG", cast=bool)
-    
+
     # Validation
     config.require("SECRET_KEY", "DATABASE_URL")
-    
+
     # Environment helpers
     config.environment
     config.is_production

@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest an idea or improvement
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. Please describe the problem before the solution.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the use case or limitation you are hitting.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API or behavior
+      description: Show how you would expect to use it.
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing workarounds or alternatives you have tried.
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Project constraints
+      options:
+        - label: This proposal keeps SmartENV free of third-party runtime dependencies.
+          required: true

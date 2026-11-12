@@ -20,9 +20,9 @@ def parse_json_file(filepath: str) -> dict[str, Any]:
             f"Invalid JSON: {e.msg}",
             source=filepath,
             line=e.lineno,
-        )
+        ) from e
     except Exception as e:
-        raise ParseError(f"Failed to parse JSON file: {e}", source=filepath)
+        raise ParseError(f"Failed to parse JSON file: {e}", source=filepath) from e
 
 
 def parse_json_string(content: str, *, source: str = "<string>") -> dict[str, Any]:
@@ -36,9 +36,9 @@ def parse_json_string(content: str, *, source: str = "<string>") -> dict[str, An
             f"Invalid JSON: {e.msg}",
             source=source,
             line=e.lineno,
-        )
+        ) from e
     except Exception as e:
-        raise ParseError(f"Failed to parse JSON string: {e}", source=source)
+        raise ParseError(f"Failed to parse JSON string: {e}", source=source) from e
 
 
 def _flatten_dict(data: dict[str, Any], prefix: str = "") -> dict[str, Any]:

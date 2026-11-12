@@ -40,12 +40,12 @@ ENV_NORMALIZATION = {
 
 def detect_environment(config: dict[str, Any] | None = None) -> str:
     """Detect the current environment from configuration or environment variables.
-    
+
     Checks in order:
     1. Provided config dictionary
     2. Environment variables (ENV_DETECTION_KEYS)
     3. Defaults to 'development'
-    
+
     Returns normalized environment name: 'development', 'production', 'testing', or 'staging'
     """
     # First check provided config
@@ -117,7 +117,7 @@ def filter_by_prefix(data: dict[str, Any], prefix: str) -> dict[str, Any]:
 
 def merge_configs(*configs: dict[str, Any]) -> dict[str, Any]:
     """Merge multiple configuration dictionaries.
-    
+
     Later configs override earlier ones (higher precedence).
     """
     result: dict[str, Any] = {}
@@ -134,7 +134,7 @@ def parse_env_vars(prefix: str | None = None) -> dict[str, str]:
 
     for key, value in os.environ.items():
         if key.startswith(prefix):
-            new_key = key[len(prefix):]
+            new_key = key[len(prefix) :]
             if new_key:
                 result[new_key] = value
 

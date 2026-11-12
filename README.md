@@ -1,9 +1,11 @@
 # SmartEnv
 
-[![Python Version](https://img.shields.io/pypi/pyversions/smartenv.svg)](https://pypi.org/project/smartenv/)
-[![License](https://img.shields.io/pypi/l/smartenv.svg)](https://github.com/smartenv/smartenv/blob/main/LICENSE)
+[![CI](https://github.com/sc8134/SmartENV/actions/workflows/ci.yml/badge.svg)](https://github.com/sc8134/SmartENV/actions/workflows/ci.yml)
 [![PyPI Version](https://img.shields.io/pypi/v/smartenv.svg)](https://pypi.org/project/smartenv/)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](https://github.com/smartenv/smartenv)
+[![Python Version](https://img.shields.io/pypi/pyversions/smartenv.svg)](https://pypi.org/project/smartenv/)
+[![License](https://img.shields.io/pypi/l/smartenv.svg)](https://github.com/sc8134/SmartENV/blob/main/LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](https://github.com/sc8134/SmartENV)
 
 > **Simple + Powerful + Zero Dependencies + Modern API**
 
@@ -36,8 +38,8 @@ config = load(".env")
 
 # Access values
 config.get("DATABASE_URL")
-config["db.host"]           # Dot notation for nested keys
-config.db.host              # Attribute access!
+config["db.host"]  # Dot notation for nested keys
+config.db.host  # Attribute access!
 
 # Type casting with defaults
 port = config.get("PORT", default=8000, cast=int)
@@ -87,7 +89,7 @@ from smartenv import load
 config = load(".env")
 config.get("DATABASE_URL")  # "postgres://localhost/mydb"
 config.get("DEBUG", cast=bool)  # True
-config.get("PORT", cast=int)    # 8000
+config.get("PORT", cast=int)  # 8000
 ```
 
 ### Multiple Sources with Precedence
@@ -96,7 +98,9 @@ config.get("PORT", cast=int)    # 8000
 # Precedence (highest to lowest):
 # 1. Environment variables
 # 2. .env files
-# 3. TOML/JSON files
+# 3. TOML files
+# 4. JSON files
+# Argument order does not matter; within one format, later arguments win.
 
 config = load(".env", "config.toml", "settings.json", env_prefix="APP_")
 ```
@@ -112,10 +116,10 @@ config = load(".env", "config.toml", "settings.json", env_prefix="APP_")
 # url = "redis://localhost"
 
 config = load("config.toml")
-config["database.host"]     # "localhost"
-config.database.host        # "localhost" (attribute access!)
-config.database.port        # 5432
-config.get("redis.url")     # "redis://localhost"
+config["database.host"]  # "localhost"
+config.database.host  # "localhost" (attribute access!)
+config.database.port  # 5432
+config.get("redis.url")  # "redis://localhost"
 ```
 
 ### Type Casting
@@ -124,9 +128,9 @@ config.get("redis.url")     # "redis://localhost"
 config.get("PORT", default=8000, cast=int)
 config.get("DEBUG", cast=bool)
 config.get("RATE", cast=float)
-config.get("ALLOWED_HOSTS", cast=list)          # Splits on comma
+config.get("ALLOWED_HOSTS", cast=list)  # Splits on comma
 config.get("ALLOWED_HOSTS", cast=list, separator=";")  # Custom separator
-config.get("CONFIG_JSON", cast="json")          # Parse JSON string
+config.get("CONFIG_JSON", cast="json")  # Parse JSON string
 config.get("CUSTOM", cast=lambda v: v.upper())  # Custom callable
 ```
 
@@ -144,11 +148,11 @@ config.get_str("NAME")
 ### Environment Detection
 
 ```python
-config.environment        # "development" | "production" | "testing" | "staging"
-config.is_production      # True/False
-config.is_development     # True/False
-config.is_testing         # True/False
-config.is_staging         # True/False
+config.environment  # "development" | "production" | "testing" | "staging"
+config.is_production  # True/False
+config.is_development  # True/False
+config.is_testing  # True/False
+config.is_staging  # True/False
 ```
 
 ### Validation
@@ -252,16 +256,35 @@ your-project/
 └── main.py
 ```
 
-## Contributing
-
-Contributions welcome! Please read our contributing guidelines first.
+## Development
 
 ```bash
-git clone https://github.com/smartenv/smartenv
-cd smartenv
+git clone https://github.com/sc8134/SmartENV.git
+cd SmartENV
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
-pytest
+pre-commit install
+make check                       # lint + format + types + coverage
 ```
+
+Without `make`:
+
+```bash
+ruff check smartenv tests examples
+ruff format --check smartenv tests examples
+mypy smartenv
+pytest --cov=smartenv --cov-branch
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and coding
+standards.
+
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and
+the [Code of Conduct](CODE_OF_CONDUCT.md) first. To report a vulnerability,
+follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
 
 ## License
 

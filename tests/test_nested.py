@@ -3,7 +3,8 @@
 import pytest
 
 from smartenv.core import Config
-from smartenv.parsers import parse_toml_string, parse_json_string
+from smartenv.exceptions import MissingKeyError
+from smartenv.parsers import parse_json_string, parse_toml_string
 
 
 class TestNestedAccess:
@@ -108,7 +109,7 @@ class TestNestedAccess:
 
         config.require("database.host", "redis.url")  # Should not raise
 
-        with pytest.raises(Exception):  # MissingKeyError
+        with pytest.raises(MissingKeyError):
             config.require("database.host", "database.missing")
 
 
@@ -117,6 +118,7 @@ class TestTOMLNestedParsing:
 
     def test_toml_parsing_creates_nested_keys(self, toml_path):
         from smartenv.parsers import parse_toml_file
+
         data = parse_toml_file(toml_path)
 
         assert "database.host" in data
@@ -132,7 +134,7 @@ class TestTOMLNestedParsing:
         [database]
         host = "localhost"
         port = 5432
-        
+
         [server]
         host = "0.0.0.0"
         port = 8000
@@ -149,6 +151,7 @@ class TestJSONNestedParsing:
 
     def test_json_parsing_creates_nested_keys(self, json_path):
         from smartenv.parsers import parse_json_file
+
         data = parse_json_file(json_path)
 
         assert "database.host" in data
@@ -156,7 +159,9 @@ class TestJSONNestedParsing:
         assert data["database.port"] == 5432
 
     def test_json_string_parsing(self):
-        json_content = '{"database": {"host": "localhost", "port": 5432}, "server": {"host": "0.0.0.0"}}'
+        json_content = (
+            '{"database": {"host": "localhost", "port": 5432}, "server": {"host": "0.0.0.0"}}'
+        )
         data = parse_json_string(json_content)
         assert data["database.host"] == "localhost"
         assert data["database.port"] == 5432
@@ -168,6 +173,7 @@ class TestLoadWithNestedFiles:
 
     def test_load_toml_creates_nested_config(self, toml_path):
         from smartenv import load
+
         config = load(toml_path)
 
         assert config.get("database.host") == "localhost"
@@ -176,6 +182,7 @@ class TestLoadWithNestedFiles:
 
     def test_load_json_creates_nested_config(self, json_path):
         from smartenv import load
+
         config = load(json_path)
 
         assert config.get("database.host") == "localhost"
@@ -183,6 +190,7 @@ class TestLoadWithNestedFiles:
 
     def test_load_multiple_sources_merges_nested(self, toml_path, json_path):
         from smartenv import load
+
         # Both have database.host - JSON should override (lower precedence)
         # Actually load order: env vars > .env > toml > json
         # So TOML should win over JSON

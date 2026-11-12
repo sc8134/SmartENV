@@ -2,8 +2,8 @@
 
 import pytest
 
-from smartenv.parsers import parse_toml_file, parse_toml_string, parse_json_file, parse_json_string
 from smartenv.exceptions import ParseError
+from smartenv.parsers import parse_json_file, parse_json_string, parse_toml_file, parse_toml_string
 
 
 class TestTOMLParser:
@@ -78,12 +78,14 @@ class TestParserIntegration:
 
     def test_load_toml_then_json(self, toml_path, json_path):
         from smartenv import load
+
         config = load(toml_path, json_path)
         # TOML has higher precedence than JSON
         assert config.get("database.host") == "localhost"
 
     def test_load_json_then_toml(self, toml_path, json_path):
         from smartenv import load
+
         config = load(json_path, toml_path)
         # TOML still has higher precedence (file order doesn't matter for different formats)
         # Actually, in load(), the order is: env vars > .env > toml > json
@@ -96,6 +98,7 @@ class TestParserIntegration:
 
     def test_load_all_three(self, basic_env_path, toml_path, json_path):
         from smartenv import load
+
         config = load(basic_env_path, toml_path, json_path)
         # .env has DATABASE_URL, TOML has database.host
         assert config.get("DATABASE_URL") == "postgres://localhost:5432/mydb"

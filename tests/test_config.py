@@ -3,7 +3,7 @@
 import pytest
 
 from smartenv.core import Config
-from smartenv.exceptions import MissingKeyError, CastingError
+from smartenv.exceptions import CastingError, MissingKeyError
 
 
 class TestConfigBasicAccess:
@@ -205,11 +205,13 @@ class TestConfigUtilities:
         assert config.get("DEBUG") == "true"
 
     def test_with_prefix(self):
-        config = Config({
-            "APP_DATABASE_URL": "postgres://...",
-            "APP_DEBUG": "true",
-            "OTHER_KEY": "value",
-        })
+        config = Config(
+            {
+                "APP_DATABASE_URL": "postgres://...",
+                "APP_DEBUG": "true",
+                "OTHER_KEY": "value",
+            }
+        )
         prefixed = config.with_prefix("APP_")
         assert prefixed.get("DATABASE_URL") == "postgres://..."
         assert prefixed.get("DEBUG") == "true"

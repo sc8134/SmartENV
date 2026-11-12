@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Basic usage examples for SmartEnv."""
 
-from smartenv import load, Config
+from smartenv import Config, load
 
 
 def main():
@@ -10,8 +10,8 @@ def main():
     # Example 1: Load from .env file
     print("1. Loading from .env file:")
     # Create a sample .env for demo
-    import tempfile
     import os
+    import tempfile
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
         f.write("""DATABASE_URL=postgres://localhost:5432/myapp
@@ -83,7 +83,7 @@ debug = true
         env_path2 = f.name
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
-        f.write("APP_NAME = \"from-toml\"\nDEBUG = true\n")
+        f.write('APP_NAME = "from-toml"\nDEBUG = true\n')
         toml_path2 = f.name
 
     try:

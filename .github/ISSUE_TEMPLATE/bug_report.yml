@@ -1,0 +1,64 @@
+name: Bug report
+description: Report incorrect behavior, crashes, or unexpected results
+title: "bug: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please search existing issues first.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: A self-contained snippet that reproduces the problem. Include the relevant config files inline.
+      render: python
+      placeholder: |
+        from smartenv import load
+
+        config = load(".env")
+        print(config.get("PORT", cast=int))
+    validations:
+      required: true
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Traceback / output
+      description: Paste the full error output, if any.
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: SmartENV version
+      description: Output of `python -c "import smartenv; print(smartenv.__version__)"`
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version and OS
+      placeholder: "3.12.4 on Ubuntu 24.04"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I am using a supported Python version (3.10+).
+          required: true

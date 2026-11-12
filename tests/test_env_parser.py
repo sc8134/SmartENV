@@ -2,8 +2,8 @@
 
 import pytest
 
-from smartenv.parsers.env import EnvParser, parse_env_file, parse_env_string
 from smartenv.exceptions import ParseError
+from smartenv.parsers.env import EnvParser, parse_env_file, parse_env_string
 
 
 class TestEnvParser:
@@ -53,7 +53,7 @@ class TestEnvParser:
 
     def test_inline_comments(self):
         """Test inline comments are stripped."""
-        content = 'KEY=value # this is a comment'
+        content = "KEY=value # this is a comment"
         parser = EnvParser(content)
         result = parser.parse()
         assert result["KEY"] == "value"

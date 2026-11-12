@@ -4,10 +4,10 @@ import pytest
 
 from smartenv.casting import (
     cast_bool,
-    cast_int,
     cast_float,
-    cast_list,
+    cast_int,
     cast_json,
+    cast_list,
     cast_value,
     get_caster,
     register_caster,
@@ -18,11 +18,17 @@ from smartenv.exceptions import CastingError
 class TestCastBool:
     """Tests for boolean casting."""
 
-    @pytest.mark.parametrize("value", ["true", "True", "TRUE", "1", "yes", "Yes", "YES", "on", "On", "ON", "y", "Y", "t", "T"])
+    @pytest.mark.parametrize(
+        "value",
+        ["true", "True", "TRUE", "1", "yes", "Yes", "YES", "on", "On", "ON", "y", "Y", "t", "T"],
+    )
     def test_truthy_values(self, value):
         assert cast_bool(value) is True
 
-    @pytest.mark.parametrize("value", ["false", "False", "FALSE", "0", "no", "No", "NO", "off", "Off", "OFF", "n", "N", "f", "F"])
+    @pytest.mark.parametrize(
+        "value",
+        ["false", "False", "FALSE", "0", "no", "No", "NO", "off", "Off", "OFF", "n", "N", "f", "F"],
+    )
     def test_falsy_values(self, value):
         assert cast_bool(value) is False
 
@@ -48,18 +54,21 @@ class TestCastBool:
 class TestCastInt:
     """Tests for integer casting."""
 
-    @pytest.mark.parametrize("value,expected", [
-        ("42", 42),
-        ("0", 0),
-        ("-10", -10),
-        ("  42  ", 42),
-        ("0xFF", 255),
-        ("0XFF", 255),
-        ("0o77", 63),
-        ("0O77", 63),
-        ("0b1010", 10),
-        ("0B1010", 10),
-    ])
+    @pytest.mark.parametrize(
+        "value,expected",
+        [
+            ("42", 42),
+            ("0", 0),
+            ("-10", -10),
+            ("  42  ", 42),
+            ("0xFF", 255),
+            ("0XFF", 255),
+            ("0o77", 63),
+            ("0O77", 63),
+            ("0b1010", 10),
+            ("0B1010", 10),
+        ],
+    )
     def test_valid_integers(self, value, expected):
         assert cast_int(value) == expected
 
@@ -93,14 +102,17 @@ class TestCastInt:
 class TestCastFloat:
     """Tests for float casting."""
 
-    @pytest.mark.parametrize("value,expected", [
-        ("3.14", 3.14),
-        ("0", 0.0),
-        ("-2.5", -2.5),
-        ("  3.14  ", 3.14),
-        ("1e10", 1e10),
-        ("1E-5", 1e-5),
-    ])
+    @pytest.mark.parametrize(
+        "value,expected",
+        [
+            ("3.14", 3.14),
+            ("0", 0.0),
+            ("-2.5", -2.5),
+            ("  3.14  ", 3.14),
+            ("1e10", 1e10),
+            ("1E-5", 1e-5),
+        ],
+    )
     def test_valid_floats(self, value, expected):
         assert cast_float(value) == expected
 
@@ -116,7 +128,7 @@ class TestCastFloat:
         assert "empty string" in str(exc_info.value)
 
     def test_invalid_string_raises(self):
-        with pytest.raises(CastingError) as exc_info:
+        with pytest.raises(CastingError):
             cast_float("not a number")
 
 
@@ -168,7 +180,7 @@ class TestCastJson:
         assert result == {"key": "value", "num": 42}
 
     def test_json_array(self):
-        result = cast_json('[1, 2, 3]')
+        result = cast_json("[1, 2, 3]")
         assert result == [1, 2, 3]
 
     def test_json_string(self):
@@ -248,7 +260,9 @@ class TestGetCaster:
         assert get_caster("json") is cast_json
 
     def test_get_custom_callable(self):
-        custom = lambda x: x * 2
+        def custom(x):
+            return x * 2
+
         assert get_caster(custom) is custom
 
     def test_unknown_name_raises(self):
@@ -269,6 +283,7 @@ class TestRegisterCaster:
 
         # Cleanup
         from smartenv.casting import _BUILTIN_CASTERS
+
         del _BUILTIN_CASTERS["custom"]
 
     def test_register_by_type(self):
@@ -280,4 +295,5 @@ class TestRegisterCaster:
 
         # Cleanup
         from smartenv.casting import _BUILTIN_CASTERS
+
         del _BUILTIN_CASTERS[int]

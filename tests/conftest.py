@@ -2,12 +2,11 @@
 
 import os
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
-from smartenv.parsers.env import EnvParser
 from smartenv.core import Config
 
 

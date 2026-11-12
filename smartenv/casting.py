@@ -13,7 +13,7 @@ Caster = Callable[[Any], Any]
 # Built-in casters
 def cast_bool(value: Any) -> bool:
     """Cast a value to boolean.
-    
+
     True values (case-insensitive): true, 1, yes, on, y, t
     False values (case-insensitive): false, 0, no, off, n, f
     """
@@ -63,7 +63,7 @@ def cast_int(value: Any) -> int:
             return int(stripped, 2)
         return int(stripped)
     except ValueError as e:
-        raise CastingError("int", int, value, reason=str(e))
+        raise CastingError("int", int, value, reason=str(e)) from e
 
 
 def cast_float(value: Any) -> float:
@@ -84,12 +84,12 @@ def cast_float(value: Any) -> float:
     try:
         return float(stripped)
     except ValueError as e:
-        raise CastingError("float", float, value, reason=str(e))
+        raise CastingError("float", float, value, reason=str(e)) from e
 
 
 def cast_list(value: Any, separator: str = ",") -> list[str]:
     """Cast a value to list of strings.
-    
+
     By default splits on comma. Also supports JSON-style arrays.
     """
     if isinstance(value, list):
@@ -130,7 +130,7 @@ def cast_json(value: Any) -> Any:
     try:
         return json.loads(stripped)
     except json.JSONDecodeError as e:
-        raise CastingError("json", object, value, reason=str(e))
+        raise CastingError("json", object, value, reason=str(e)) from e
 
 
 # Registry of built-in casters
@@ -167,7 +167,9 @@ def get_caster(cast: type | str | Callable[[Any], Any] | None) -> Caster | None:
         # String name lookup
         if cast in _BUILTIN_CASTERS:
             return _BUILTIN_CASTERS[cast]
-        raise ValueError(f"Unknown caster name: {cast!r}. Available: {list(_BUILTIN_CASTERS.keys())}")
+        raise ValueError(
+            f"Unknown caster name: {cast!r}. Available: {list(_BUILTIN_CASTERS.keys())}"
+        )
 
     # Type lookup
     if cast in _BUILTIN_CASTERS:
@@ -182,7 +184,13 @@ def register_caster(name: str | type, caster: Caster) -> None:
     _BUILTIN_CASTERS[name] = caster
 
 
-def cast_value(value: Any, cast: type | str | Callable[[Any], Any] | None, *, key: str = "value", source: str | None = None) -> Any:
+def cast_value(
+    value: Any,
+    cast: type | str | Callable[[Any], Any] | None,
+    *,
+    key: str = "value",
+    source: str | None = None,
+) -> Any:
     """Cast a value using the specified caster."""
     if cast is None:
         return value
@@ -195,15 +203,23 @@ def cast_value(value: Any, cast: type | str | Callable[[Any], Any] | None, *, ke
         return caster(value)
     except CastingError as e:
         # Re-raise with the correct key and source
-        raise CastingError(key, e.target_type, value, source=source, reason=str(e))
+        raise CastingError(key, e.target_type, value, source=source, reason=str(e)) from e
     except Exception as e:
         # Determine the target type for error message
         if isinstance(cast, type):
             target_type = cast
         elif isinstance(cast, str):
             # Map string names to types for error message
-            type_map = {"int": int, "bool": bool, "float": float, "list": list, "json": object, "str": str, "string": str}
+            type_map = {
+                "int": int,
+                "bool": bool,
+                "float": float,
+                "list": list,
+                "json": object,
+                "str": str,
+                "string": str,
+            }
             target_type = type_map.get(cast, object)
         else:
             target_type = type(cast)
-        raise CastingError(key, target_type, value, source=source, reason=str(e))
+        raise CastingError(key, target_type, value, source=source, reason=str(e)) from e

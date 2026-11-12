@@ -10,9 +10,7 @@ class EnvParser:
     """Parses .env file content into a dictionary."""
 
     # Simple regex to match KEY=VALUE lines with optional export prefix
-    _LINE_PATTERN = re.compile(
-        r'^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$'
-    )
+    _LINE_PATTERN = re.compile(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$")
 
     def __init__(self, content: str, *, source: str = "<string>") -> None:
         if content.startswith("\ufeff"):
@@ -33,14 +31,19 @@ class EnvParser:
             parsed = self._parse_line(line, line_num)
             if parsed:
                 key, raw_value = parsed
-                
+
                 # Check for multiline quoted string
-                if (raw_value.startswith('"') and not self._ends_with_unescaped_quote(raw_value, '"')) or \
-                   (raw_value.startswith("'") and not self._ends_with_unescaped_quote(raw_value, "'")):
+                if (
+                    raw_value.startswith('"')
+                    and not self._ends_with_unescaped_quote(raw_value, '"')
+                ) or (
+                    raw_value.startswith("'")
+                    and not self._ends_with_unescaped_quote(raw_value, "'")
+                ):
                     # Consume subsequent lines
                     raw_value, consumed = self._consume_multiline_raw(raw_value, i + 1)
                     i += consumed
-                
+
                 # Strip trailing comment (but not inside quotes)
                 raw_value = self._strip_inline_comment(raw_value)
 
@@ -63,7 +66,7 @@ class EnvParser:
         match = self._LINE_PATTERN.match(line)
         if not match:
             raise ParseError(
-                f"Invalid line format",
+                "Invalid line format",
                 source=self.source,
                 line=line_num,
             )
@@ -78,7 +81,7 @@ class EnvParser:
         quote_char = raw_value[0]
         lines = [raw_value]
         i = start_line  # start_line is 1-based, _lines is 0-based
-        
+
         while i < len(self._lines):
             next_line = self._lines[i]
             lines.append(next_line)
@@ -86,7 +89,7 @@ class EnvParser:
             if self._ends_with_unescaped_quote(next_line, quote_char):
                 break
             i += 1
-        
+
         # Join with newlines
         combined = "\n".join(lines)
         consumed = i - start_line + 1
@@ -125,11 +128,9 @@ class EnvParser:
                 in_double = not in_double
             elif ch == "'" and not in_double:
                 in_single = not in_single
-            elif ch == "#" and not in_double and not in_single:
-                # Check if preceded by whitespace
-                if i > 0 and value[i - 1].isspace():
-                    comment_pos = i
-                    break
+            elif ch == "#" and not in_double and not in_single and i > 0 and value[i - 1].isspace():
+                comment_pos = i
+                break
 
         if comment_pos > 0:
             return value[:comment_pos].rstrip()
@@ -206,7 +207,7 @@ class EnvParser:
                             f"Invalid unicode escape \\u{hex_digits}",
                             source=self.source,
                             line=line_num,
-                        )
+                        ) from None
                 elif next_char == "U" and i + 9 < len(value):
                     # Unicode escape \UXXXXXXXX
                     hex_digits = value[i + 2 : i + 10]
@@ -218,7 +219,7 @@ class EnvParser:
                             f"Invalid unicode escape \\U{hex_digits}",
                             source=self.source,
                             line=line_num,
-                        )
+                        ) from None
                 else:
                     # Unknown escape - keep as literal (just the next char)
                     result.append(next_char)

@@ -24,7 +24,7 @@ class Config(Mapping):
         self._env_prefix = env_prefix
         self._source_files = source_files or []
         self._environment = detect_environment(data)
-        self._nested_cache: dict[str, "Config"] = {}
+        self._nested_cache: dict[str, Config] = {}
 
     @property
     def environment(self) -> str:
@@ -62,7 +62,7 @@ class Config(Mapping):
     def __len__(self) -> int:
         return len(self._data)
 
-    def __contains__(self, key: str) -> bool:
+    def __contains__(self, key: object) -> bool:
         return key in self._data
 
     def __repr__(self) -> str:
@@ -96,9 +96,7 @@ class Config(Mapping):
 
         nested_prefix = f"{prefix}."
         nested_data = {
-            k[len(nested_prefix):]: v
-            for k, v in self._data.items()
-            if k.startswith(nested_prefix)
+            k[len(nested_prefix) :]: v for k, v in self._data.items() if k.startswith(nested_prefix)
         }
 
         nested = Config(nested_data, env_prefix=self._env_prefix)
@@ -109,9 +107,7 @@ class Config(Mapping):
     @overload
     def get(self, key: str, default: Any = None, cast: None = None) -> Any: ...
     @overload
-    def get(
-        self, key: str, default: Any, cast: type | str | Callable[[Any], Any]
-    ) -> Any: ...
+    def get(self, key: str, default: Any, cast: type | str | Callable[[Any], Any]) -> Any: ...
     @overload
     def get(
         self,
@@ -127,16 +123,16 @@ class Config(Mapping):
         cast: type | str | Callable[[Any], Any] | None = None,
     ) -> Any:
         """Get a configuration value with optional casting and default.
-        
+
         Args:
             key: Configuration key (supports dot notation for nested access)
             default: Default value if key is not found
             cast: Type or caster function to convert the value
-            
+
         Returns:
             The configuration value, cast if requested, or default if not found.
             Keys present with a value of ``None`` are returned as ``None``.
-            
+
         Raises:
             CastingError: If casting fails
         """
@@ -154,13 +150,13 @@ class Config(Mapping):
     # Required keys validation
     def require(self, *keys: str) -> "Config":
         """Ensure required keys are present.
-        
+
         Args:
             *keys: One or more required configuration keys
-            
+
         Returns:
             Self for chaining
-            
+
         Raises:
             MissingKeyError: If any required key is missing
         """
@@ -184,19 +180,27 @@ class Config(Mapping):
     # Convenience methods for common types
     def get_bool(self, key: str, default: bool | None = None) -> bool | None:
         """Get a boolean value."""
-        return self.get(key, default=default, cast=bool)
+        result: bool | None = self.get(key, default=default, cast=bool)
+        return result
 
     def get_int(self, key: str, default: int | None = None) -> int | None:
         """Get an integer value."""
-        return self.get(key, default=default, cast=int)
+        result: int | None = self.get(key, default=default, cast=int)
+        return result
 
     def get_float(self, key: str, default: float | None = None) -> float | None:
         """Get a float value."""
-        return self.get(key, default=default, cast=float)
+        result: float | None = self.get(key, default=default, cast=float)
+        return result
 
-    def get_list(self, key: str, default: list[str] | None = None, separator: str = ",") -> list[str] | None:
+    def get_list(
+        self, key: str, default: list[str] | None = None, separator: str = ","
+    ) -> list[str] | None:
         """Get a list value."""
-        return self.get(key, default=default, cast=lambda v: cast_list(v, separator))
+        result: list[str] | None = self.get(
+            key, default=default, cast=lambda v: cast_list(v, separator)
+        )
+        return result
 
     def get_json(self, key: str, default: Any = None) -> Any:
         """Get a JSON-parsed value."""
@@ -204,7 +208,8 @@ class Config(Mapping):
 
     def get_str(self, key: str, default: str | None = None) -> str | None:
         """Get a string value."""
-        return self.get(key, default=default, cast=str)
+        result: str | None = self.get(key, default=default, cast=str)
+        return result
 
     # Dictionary-like methods
     def keys(self) -> Any:
@@ -237,18 +242,18 @@ def load(
     environment: str | None = None,
 ) -> Config:
     """Load configuration from multiple sources with precedence.
-    
+
     Precedence (highest to lowest):
     1. Real environment variables (with optional prefix)
     2. .env files
     3. TOML files
     4. JSON files
-    
+
     Args:
         *sources: Paths to configuration files (.env, .toml, .json)
         env_prefix: Prefix for environment variables (e.g., "APP_")
         environment: Override environment detection
-        
+
     Returns:
         Config object with merged configuration
     """

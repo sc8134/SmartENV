@@ -1,10 +1,7 @@
 """Tests for environment detection and multiple source loading."""
 
-import os
-import pytest
-
-from smartenv.core import load, Config
-from smartenv.utils import detect_environment, is_production, is_development, is_testing, is_staging
+from smartenv.core import Config, load
+from smartenv.utils import detect_environment, is_development, is_production, is_staging, is_testing
 
 
 class TestEnvironmentDetection:
@@ -52,11 +49,13 @@ class TestEnvironmentDetection:
 
     def test_priority_order(self):
         """Test that APP_ENV has highest priority."""
-        config = Config({
-            "APP_ENV": "production",
-            "ENVIRONMENT": "testing",
-            "FLASK_ENV": "development",
-        })
+        config = Config(
+            {
+                "APP_ENV": "production",
+                "ENVIRONMENT": "testing",
+                "FLASK_ENV": "development",
+            }
+        )
         assert config.environment == "production"
 
     def test_normalization(self):
@@ -202,14 +201,14 @@ class TestPrecedenceOrder:
         assert config.get("PORT", cast=int) == 9999
 
     def test_precedence_env_file_over_toml(self, basic_env_path, toml_path):
-        """ .env file > TOML."""
+        """.env file > TOML."""
         # Both have port-like values but different keys
         # Create a conflict by using same key
         pass  # Hard to test without modifying fixtures
 
     def test_load_specific_functions(self, basic_env_path, toml_path, json_path):
         """Test load_env, load_toml, load_json functions."""
-        from smartenv import load_env, load_toml, load_json
+        from smartenv import load_env, load_json, load_toml
 
         config_env = load_env(basic_env_path)
         assert config_env.get("DATABASE_URL") == "postgres://localhost:5432/mydb"
