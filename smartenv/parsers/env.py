@@ -2,7 +2,6 @@
 
 import os
 import re
-from typing import Any
 
 from smartenv.exceptions import ParseError
 
@@ -16,6 +15,8 @@ class EnvParser:
     )
 
     def __init__(self, content: str, *, source: str = "<string>") -> None:
+        if content.startswith("\ufeff"):
+            content = content[1:]
         self.content = content
         self.source = source
         self._lines = content.splitlines()
@@ -148,9 +149,11 @@ class EnvParser:
             quote_char = raw_value[0]
             inner = raw_value[1:-1]
 
-            # Handle edge case: if the closing quote is escaped (preceded by odd number of backslashes),
-            # then the string is not properly terminated. Treat the last quote as literal.
-            if inner and inner[-1] == "\\":
+            # Handle edge case: if the closing quote is escaped (preceded by an odd
+            # number of backslashes), the string is not properly terminated. Treat the
+            # last quote as literal content.
+            trailing_backslashes = len(inner) - len(inner.rstrip("\\"))
+            if trailing_backslashes % 2 == 1:
                 # The closing quote was escaped, so it's part of the content
                 # Put the last quote back and process as unquoted
                 inner = raw_value[1:]  # Keep everything after first quote
@@ -230,7 +233,7 @@ class EnvParser:
 def parse_env_file(filepath: str | os.PathLike[str]) -> dict[str, str]:
     """Parse a .env file and return a dictionary of key-value pairs."""
     path = os.fspath(filepath)
-    with open(path, encoding="utf-8") as f:
+    with open(path, encoding="utf-8-sig") as f:
         content = f.read()
     return EnvParser(content, source=path).parse()
 

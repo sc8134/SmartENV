@@ -1,11 +1,11 @@
 """Core Config class and load function for SmartEnv."""
 
 import os
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any, overload
 
-from .casting import cast_value, get_caster
-from .exceptions import CastingError, MissingKeyError
+from .casting import cast_list, cast_value
+from .exceptions import MissingKeyError
 from .parsers import parse_env_file, parse_json_file, parse_toml_file
 from .utils import detect_environment, filter_by_prefix, merge_configs, parse_env_vars
 
@@ -52,10 +52,9 @@ class Config(Mapping):
         return self._environment == "staging"
 
     def __getitem__(self, key: str) -> Any:
-        value = self._data.get(key)
-        if value is None:
+        if key not in self._data:
             raise KeyError(key)
-        return value
+        return self._data[key]
 
     def __iter__(self) -> Any:
         return iter(self._data)
@@ -72,21 +71,21 @@ class Config(Mapping):
 
     # Attribute access for nested keys
     def __getattr__(self, name: str) -> Any:
-        # First check if it's a real attribute
-        if name in self.__dict__:
-            return self.__dict__[name]
+        data = self.__dict__.get("_data")
+        if data is None:
+            # Reached before __init__ runs or while copy/pickle builds the instance
+            raise AttributeError(name)
 
-        # Then check if it's a nested config namespace
+        # Check if it's a nested config namespace
         if "." not in name:
-            # Check if there are keys with this prefix
             prefix = f"{name}."
-            has_nested = any(k.startswith(prefix) for k in self._data)
+            has_nested = any(k.startswith(prefix) for k in data)
             if has_nested:
                 return self._get_nested(name)
 
-        # Finally check if it's a direct key
-        if name in self._data:
-            return self._data[name]
+        # Otherwise check if it's a direct key
+        if name in data:
+            return data[name]
 
         raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 
@@ -110,15 +109,22 @@ class Config(Mapping):
     @overload
     def get(self, key: str, default: Any = None, cast: None = None) -> Any: ...
     @overload
-    def get(self, key: str, default: Any, cast: type | str | callable) -> Any: ...
+    def get(
+        self, key: str, default: Any, cast: type | str | Callable[[Any], Any]
+    ) -> Any: ...
     @overload
-    def get(self, key: str, default: None = None, cast: type | str | callable = None) -> Any: ...
+    def get(
+        self,
+        key: str,
+        default: None = None,
+        cast: type | str | Callable[[Any], Any] | None = None,
+    ) -> Any: ...
 
     def get(
         self,
         key: str,
         default: Any = None,
-        cast: type | str | callable | None = None,
+        cast: type | str | Callable[[Any], Any] | None = None,
     ) -> Any:
         """Get a configuration value with optional casting and default.
         
@@ -129,21 +135,15 @@ class Config(Mapping):
             
         Returns:
             The configuration value, cast if requested, or default if not found.
+            Keys present with a value of ``None`` are returned as ``None``.
             
         Raises:
             CastingError: If casting fails
         """
-        value = self._get_nested_value(key)
-
-        if value is None:
+        if key not in self._data:
             return default
 
-        return cast_value(value, cast, key=key, source=self._source_name)
-
-    def _get_nested_value(self, key: str) -> Any:
-        """Get a value supporting dot notation for nested access."""
-        # Keys are already stored in dot notation (e.g., "db.host")
-        return self._data.get(key)
+        return cast_value(self._data[key], cast, key=key, source=self._source_name)
 
     @property
     def _source_name(self) -> str | None:
@@ -164,27 +164,16 @@ class Config(Mapping):
         Raises:
             MissingKeyError: If any required key is missing
         """
-        missing = []
+        missing = [key for key in keys if key not in self._data]
         available = list(self._data.keys())
 
-        for key in keys:
-            if self._get_nested_value(key) is None:
-                missing.append(key)
-
         if missing:
-            if len(missing) == 1:
-                raise MissingKeyError(
-                    missing[0],
-                    source=self._source_name,
-                    available_keys=available,
-                )
-            else:
-                # Raise for the first missing key but include all in message
-                raise MissingKeyError(
-                    missing[0],
-                    source=self._source_name,
-                    available_keys=available,
-                )
+            raise MissingKeyError(
+                missing[0],
+                source=self._source_name,
+                available_keys=available,
+                missing_keys=missing,
+            )
 
         return self
 
@@ -207,10 +196,7 @@ class Config(Mapping):
 
     def get_list(self, key: str, default: list[str] | None = None, separator: str = ",") -> list[str] | None:
         """Get a list value."""
-        if separator != ",":
-            from .casting import cast_list
-            return self.get(key, default=default, cast=lambda v: cast_list(v, separator))
-        return self.get(key, default=default, cast=list)
+        return self.get(key, default=default, cast=lambda v: cast_list(v, separator))
 
     def get_json(self, key: str, default: Any = None) -> Any:
         """Get a JSON-parsed value."""
@@ -241,7 +227,6 @@ class Config(Mapping):
 
     def with_prefix(self, prefix: str) -> "Config":
         """Return a new Config with keys filtered by prefix (prefix removed)."""
-        from .utils import filter_by_prefix
         filtered = filter_by_prefix(self._data, prefix)
         return Config(filtered, env_prefix=prefix, source_files=self._source_files)
 
@@ -267,22 +252,30 @@ def load(
     Returns:
         Config object with merged configuration
     """
-    configs: list[dict[str, Any]] = []
+    # Files are merged in ascending priority: JSON, then TOML, then .env, so that
+    # .env > TOML > JSON regardless of argument order. Within one format, later
+    # arguments override earlier ones.
+    parsed: list[tuple[int, int, dict[str, Any]]] = []
 
-    # 2-4. File sources (in order provided, lower precedence)
-    for source in sources:
+    for index, source in enumerate(sources):
         source_path = os.fspath(source)
         ext = os.path.splitext(source_path)[1].lower()
 
-        if ext == ".env":
-            configs.append(parse_env_file(source_path))
-        elif ext in (".toml", ".tml"):
-            configs.append(parse_toml_file(source_path))
+        if ext in (".toml", ".tml"):
+            priority = 1
+            data = parse_toml_file(source_path)
         elif ext == ".json":
-            configs.append(parse_json_file(source_path))
+            priority = 0
+            data = parse_json_file(source_path)
         else:
-            # Try to detect by content or default to .env parsing
-            configs.append(parse_env_file(source_path))
+            # .env files, plus unknown extensions treated as .env
+            priority = 2
+            data = parse_env_file(source_path)
+
+        parsed.append((priority, index, data))
+
+    parsed.sort(key=lambda item: (item[0], item[1]))
+    configs = [data for _, _, data in parsed]
 
     # 1. Environment variables (highest precedence - added last)
     env_vars = parse_env_vars(env_prefix)

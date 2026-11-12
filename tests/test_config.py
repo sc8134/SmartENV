@@ -232,7 +232,11 @@ class TestConfigEdgeCases:
     def test_none_values(self):
         config = Config({"KEY": None})
         assert config.get("KEY") is None
-        assert config.get("KEY", default="default") == "default"
+        assert config["KEY"] is None
+        assert "KEY" in config
+        # An explicitly stored None is a present value, not a missing key
+        assert config.get("KEY", default="default") is None
+        config.require("KEY")
 
     def test_numeric_keys(self):
         config = Config({"123": "value"})

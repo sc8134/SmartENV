@@ -3,7 +3,6 @@
 import os
 from typing import Any
 
-
 # Environment variable names that indicate the environment
 ENV_DETECTION_KEYS = [
     "APP_ENV",

@@ -21,12 +21,18 @@ class MissingKeyError(ConfigError):
         *,
         source: str | None = None,
         available_keys: list[str] | None = None,
+        missing_keys: list[str] | None = None,
     ) -> None:
         self.key = key
         self.source = source
+        self.missing_keys = list(missing_keys) if missing_keys else [key]
         self.available_keys = available_keys or []
 
-        message = f"Required configuration key '{key}' is missing"
+        if len(self.missing_keys) == 1:
+            message = f"Required configuration key '{key}' is missing"
+        else:
+            joined = ", ".join(repr(k) for k in self.missing_keys)
+            message = f"Required configuration keys are missing: {joined}"
         if source:
             message += f" (from {source})"
         if self.available_keys:

@@ -58,7 +58,8 @@ if config.is_production:
 pip install smartenv
 ```
 
-Requires Python 3.10+. Zero dependencies — only the standard library.
+Requires Python 3.10+. No dependencies on Python 3.11+ — only the standard library
+(on 3.10, `tomli` is installed automatically because `tomllib` is not available).
 
 ## Features
 

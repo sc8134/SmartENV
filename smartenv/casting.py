@@ -1,11 +1,10 @@
 """Type casting system for configuration values."""
 
 import json
-import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from .exceptions import CastingError
-
 
 # Type alias for caster functions
 Caster = Callable[[Any], Any]
