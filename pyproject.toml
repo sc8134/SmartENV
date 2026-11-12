@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "smartenv"
+name = "smartenv-settings"
 version = "1.0.0"
 description = "Simple, powerful, zero-dependency configuration loader for Python"
 readme = "README.md"
